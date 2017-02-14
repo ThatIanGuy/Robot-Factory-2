@@ -63,7 +63,10 @@ public class Platform implements ActionListener {
 	public void move(){
 		posX += xVelocity;
 		if(posX == 0){
-			xVelocity = 1;
+			xVelocity = 10;
+		}
+		if(posX == 800){
+			xVelocity = -10;
 		}
 	}
 	

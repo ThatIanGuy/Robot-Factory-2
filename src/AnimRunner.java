@@ -104,7 +104,13 @@ public class AnimRunner extends JComponent implements ActionListener, MouseListe
 	}
 
 	public void actionPerformed(ActionEvent e) {
-		
+		for(int i = 0; i<= yVelocity; i++){
+			for(int o = 0; o<plats.sizeX; o++){
+				if(plats.intersect(mouseX-8, mouseY-31, p)!=-1){
+					yVelocity = 0;
+				}
+			}
+		}
 		mouseY+=yVelocity;
 		yVelocity += accel;
 		if(mouseY>=380 && mouseY<=460 && mouseX> 340 && mouseX<480){
@@ -160,7 +166,12 @@ public class AnimRunner extends JComponent implements ActionListener, MouseListe
 				mouseY = plats.getY(p.get(plats.intersect(mouseX-8,mouseY-31,p)))-9;
 			}
 		}
-		
+		for(int i = 0; i < plats.sizeX; i++){
+			if(plats.getX(p.get(i))<=-100){
+				p.remove(0);
+				platNum--;
+			}
+		}
 		repaint();
 	}
 	
