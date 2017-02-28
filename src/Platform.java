@@ -15,7 +15,7 @@ public class Platform implements ActionListener {
 	public int vY = 0;
 	public int platCollide = -1;
 	int yVelocity = 0;
-	int xVelocity = -1;
+	int xVelocity = -5;
 	int accelY = 0;
 	int accelX = 0;
 	
@@ -62,12 +62,12 @@ public class Platform implements ActionListener {
 	}
 	public void move(){
 		posX += xVelocity;
-		if(posX == 0){
+		/*if(posX == 0){
 			xVelocity = 10;
 		}
 		if(posX == 800){
 			xVelocity = -10;
-		}
+		}*/
 	}
 	
 	public void actionPerformed(ActionEvent e){

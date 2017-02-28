@@ -40,6 +40,8 @@ public class AnimRunner extends JComponent implements ActionListener, MouseListe
 	int randPlatY = 300;
 	int platSizeX = 100;
 	int platSizeY = 40;
+	int startPlatX = 800;
+	int startPlatY = 0;
 	
 	int vX = 10;
 	int vY = 10; 
@@ -98,9 +100,6 @@ public class AnimRunner extends JComponent implements ActionListener, MouseListe
 		}
 		else{}
 		
-		g.setColor(Color.CYAN);
-		g.fillRect(380, 380, 100,40);
-		
 	}
 
 	public void actionPerformed(ActionEvent e) {
@@ -111,13 +110,14 @@ public class AnimRunner extends JComponent implements ActionListener, MouseListe
 				}
 			}
 		}
+		
 		mouseY+=yVelocity;
 		yVelocity += accel;
-		if(mouseY>=380 && mouseY<=460 && mouseX> 340 && mouseX<480){
+		/*if(mouseY>=380 && mouseY<=460 && mouseX> 340 && mouseX<480){
 			yVelocity = -yVelocity;
 			glide = false;
 			space = false;
-		}
+		}*/
 		if(yVelocity>40){
 			yVelocity =40;
 		}
@@ -161,15 +161,22 @@ public class AnimRunner extends JComponent implements ActionListener, MouseListe
 			glide = false;
 			space = false;
 			jumpsLeft = 2;
-			mouseX -= 1;
+			mouseX-=5;
 			if(plats.intersect(mouseX-8, mouseY-31, p)!=-1){
 				mouseY = plats.getY(p.get(plats.intersect(mouseX-8,mouseY-31,p)))-9;
 			}
 		}
-		for(int i = 0; i < plats.sizeX; i++){
+		for(int i = 0; i < p.size(); i++){
 			if(plats.getX(p.get(i))<=-100){
-				p.remove(0);
+				p.remove(i);
 				platNum--;
+				
+				randPlatX = (int)(Math.random()*600)+50;
+				randPlatY = (int)(Math.random()*580)+0;
+				platNum++;
+				p.add(new Platform());
+				p.get(platNum).setSize(startPlatX+randPlatX, startPlatY+randPlatY, platSizeX, platSizeY);
+				
 			}
 		}
 		repaint();
@@ -214,12 +221,13 @@ public class AnimRunner extends JComponent implements ActionListener, MouseListe
 			boxY-=10;
 		}
 		if(keyPress == arg0.VK_P){
+			
 			randPlatX = (int)(Math.random()*600)+50;
-			randPlatY = (int)(Math.random()*400)+50;
+			randPlatY = (int)(Math.random()*580)+0;
 			platNum++;
 			p.add(new Platform());
-			p.get(platNum).setSize(randPlatX, randPlatY, platSizeX, platSizeY);
-			if(p.size()>4){
+			p.get(platNum).setSize(startPlatX+randPlatX, startPlatY+randPlatY, platSizeX, platSizeY);
+			if(p.size()>10){
 				p.remove(0);
 				platNum--;
 			}
