@@ -125,7 +125,7 @@ public class AnimRunner extends JComponent implements ActionListener, MouseListe
 		//literately
 		if(colorChoice == 1){
 			try{
-				playerTexture = ImageIO.read(new File("C:/Users/imor1471/Downloads/Transparent robot.gif"));
+				playerTexture = ImageIO.read(new File("C:/Users/imor1471/Downloads/Transparentrobot.gif"));
 			}
 			catch(IOException e){
 				e.printStackTrace();
