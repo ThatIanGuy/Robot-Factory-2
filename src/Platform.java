@@ -29,7 +29,10 @@ public class Platform implements ActionListener {
 	}*/
 	public int intersect(int playerx, int playery, ArrayList plat){
 		for(int i = 0; i <plat.size();i++){
-			if(playerx+20>= getX((Platform) plat.get(i))&&playerx<=getX((Platform)plat.get(i))+100&&playery+40>=getY((Platform)plat.get(i))&&playery<=getY((Platform)plat.get(i))+40){
+			if(playerx+20>= getX((Platform) plat.get(i))
+					&&playerx<=getX((Platform)plat.get(i))+100
+					&&playery+40>=getY((Platform)plat.get(i))
+					&&playery<=getY((Platform)plat.get(i))+40){
 					platCollide = i;
 				return platCollide;
 			}
