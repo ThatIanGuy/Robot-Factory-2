@@ -2,7 +2,11 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Font;
 import java.awt.Graphics;
+import java.awt.GraphicsConfiguration;
+import java.awt.GraphicsDevice;
+import java.awt.GraphicsEnvironment;
 import java.awt.Image;
+import java.awt.Transparency;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -10,6 +14,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -35,9 +40,14 @@ public class AnimRunner extends JComponent implements ActionListener, MouseListe
 	//TODO Add textures for player, background, platforms, etc.
 	//DONE Add restarting/new game
 	//TODO Add color choice
-	//TODO Add Start Menu
-	//TODO Add Buttons
+	//DONE Add Start Menu
+	//DONE Add Buttons
 	//TODO Add Settings
+	//TODO Add Title
+	//TODO Fix bullet bug
+	//TODO Make background work
+	//TODO Jumper enemy?
+	//TODO Highscores
 	
 	static int winHeight;
 	static int winWidth;
@@ -46,7 +56,7 @@ public class AnimRunner extends JComponent implements ActionListener, MouseListe
 	int playerX = 150;
 	int playerY = -70;
 	int colorChoice = 1;
-	int playerSize = 61;
+	static int playerSize = 40;
 	boolean up = true;
 	int yVelocity = 0;
 	double accel = 3;
@@ -69,8 +79,8 @@ public class AnimRunner extends JComponent implements ActionListener, MouseListe
 	int platSizeY = 40;
 	int startPlatX = 800;
 	int startPlatY = 0;
-	int scoreTimer = 0;
-	int score =0;
+	int scoreTimer, attackTimer = 0;
+	int score = 0;
 	int jetFuel =100;
 	int startPlatColor = 255;
 	boolean startSpawnDone = false;
@@ -80,17 +90,37 @@ public class AnimRunner extends JComponent implements ActionListener, MouseListe
 	int deathAnimationCount = 0;
 	int buttNum = -1;
 	boolean inMenu = true;
+	int enemyNum = -1;
+	int bulletCount = -1;
+	int backgroundPosX = 0;
+	int backgroundPosY = -10;
+	int backgroundPosX2 = 1529;
+	int backgroundPosY2 = -10;
 	
 	int vX = 10;
 	int vY = 10; 
-	Image playerTexture;
-	Image explosionTexture;
+	
+	static Image playerTexture;
+	static Image explosionTexture;
+	static Image background1;
+	static Image background2;
+	GraphicsEnvironment env = GraphicsEnvironment.getLocalGraphicsEnvironment();
+    GraphicsDevice device = env.getDefaultScreenDevice();
+    GraphicsConfiguration config = device.getDefaultConfiguration();
+    BufferedImage buffy = config.createCompatibleImage(1592, 753, Transparency.TRANSLUCENT);
+	Graphics background = buffy.getGraphics();
 	
 	ArrayList<Spawn> s = new ArrayList<Spawn>();
 	ArrayList<Platform> p = new ArrayList<Platform>();
 	ArrayList<Button> b = new ArrayList<Button>();
+	ArrayList<Enemy> enemy = new ArrayList<Enemy>();
+	ArrayList<Shooter> shooters = new ArrayList<Shooter>();
+	ArrayList<Bullet> bullets = new ArrayList<Bullet>();
+	
 	Button buttons = new Button();
 	Platform plats = new Platform();
+	Shooter shoot = new Shooter();
+	Bullet bull = new Bullet();
 	
 	public static void main(String[] args) {
 		JFrame window = new JFrame();
@@ -108,13 +138,35 @@ public class AnimRunner extends JComponent implements ActionListener, MouseListe
 		
 		Timer t = new Timer(20,animation);
 		t.start();
-		
+		try{
+			background1 = ImageIO.read(new File("H:/AP Computer Science/AP Workspace/Fun stuff/src/factorybackground.png"));
+			background2 = ImageIO.read(new File("H:/AP Computer Science/AP Workspace/Fun stuff/src/factorybackgroundbackwards.png"));
+		}
+		catch(IOException e){
+			e.printStackTrace();
+		}
+		try{
+				//playerTexture = ImageIO.read(new File("C:/Users/imor1471/Downloads/Transparentrobot.gif"));
+				playerTexture = ImageIO.read(new File("H:/AP Computer Science/AP Workspace/Fun stuff/src/Transparentrobot.gif"));
+				playerSize = playerTexture.getHeight(null);
+			}
+			catch(IOException e){
+				e.printStackTrace();
+			}
+		try{
+				explosionTexture = ImageIO.read(new File("H:/AP Computer Science/AP Workspace/Fun stuff/src/explosion.png"));
+			}
+		catch(IOException e){
+				e.printStackTrace();
+			}
 		window.addMouseListener(animation);
 		window.addKeyListener(animation);
 	}
 	
 	public void paint(Graphics g){
 		
+		g.drawImage(background1,backgroundPosX,backgroundPosY, null);
+		g.drawImage(background2,backgroundPosX2,backgroundPosY2, null);
 		if(objects>=0){
 			for(int i = 0; i<=objects; i++){
 				s.get(i).paintRect(g);
@@ -124,25 +176,15 @@ public class AnimRunner extends JComponent implements ActionListener, MouseListe
 		
 		//literately
 		if(colorChoice == 1){
-			try{
-				playerTexture = ImageIO.read(new File("C:/Users/imor1471/Downloads/Transparentrobot.gif"));
-			}
-			catch(IOException e){
-				e.printStackTrace();
-			}
+			
 			g.drawImage(playerTexture, playerX-8, playerY-31, null);
 			//g.setColor(Color.GREEN);
 			//g.fillRect(playerX-8, playerY-31, playerSize,playerSize);
 		}
 		else if(colorChoice == 2){
-			try{
-				explosionTexture = ImageIO.read(new File("C:/Users/imor1471/Downloads/explosion.png"));
-			}
-			catch(IOException e){
-				e.printStackTrace();
-			}
+			
 			//Doesn't work //g.drawImage(explosionTexture, playerX-explosionTexture.getWidth(null)/2, playerY-explosionTexture.getHeight(null), 50, 50, null);
-			g.drawImage(explosionTexture, playerX-explosionTexture.getWidth(null)/2, playerY-explosionTexture.getHeight(null), null);
+			g.drawImage(explosionTexture, playerX-explosionTexture.getWidth(null)/2, playerY-explosionTexture.getHeight(null)+explosionTexture.getHeight(null)/4, null);
 			//g.setColor(Color.RED);
 			//g.fillRect(playerX-8, playerY-31, playerSize,playerSize);
 		}
@@ -162,6 +204,7 @@ public class AnimRunner extends JComponent implements ActionListener, MouseListe
 		else{}
 		if(startPlatColor<255){
 			g.setColor(new Color(startPlatColor, startPlatColor, startPlatColor));
+			g.setColor(new Color(startPlatColor, startPlatColor, startPlatColor, 255-startPlatColor));
 			g.fillRect(100, 400, 120, 30);
 		}
 		if(deathAnimationCount>300){
@@ -171,7 +214,9 @@ public class AnimRunner extends JComponent implements ActionListener, MouseListe
 		if(p.size()>=0){
 			for(int i = 0; i<=platNum; i++){
 				p.get(i).paintRect(g);
-				p.get(i).move();
+				if(inMenu == false){
+					p.get(i).move();
+				}
 			}
 		}
 		if(dead==true){
@@ -188,27 +233,62 @@ public class AnimRunner extends JComponent implements ActionListener, MouseListe
 				b.get(i).paintButton(g);
 			}
 		}
+		if(enemy.size()>=0){
+			for(int i = 0; i <= enemyNum; i++){
+				enemy.get(i).paint(g);
+				enemy.get(i).move();
+			}
+		}
+		if(bullets.size()>=0){
+			for(int i = 0; i <= bulletCount; i++){
+				 bullets.get(i).paint(g);
+				 bullets.get(i).move();
+			}
+		}
 		
 	}
 
 	public void actionPerformed(ActionEvent e) {
+		
 		if(inMenu == false){
+			backgroundPosX -=1;
+			backgroundPosX2 -=1;
+			if(backgroundPosX == -1529){
+				backgroundPosX = 1529;
+			}
+			if(backgroundPosX2 == -1529){
+				backgroundPosX2 = 1529;
+			}
 			if(dead == false){
 				for(int i = 0; i<= yVelocity; i++){
 					for(int o = 0; o<plats.sizeX; o++){
-						if(plats.intersect(playerX-8, playerY-31, p)!=-1){
+						if(plats.intersect(playerX-8, playerY-31, p, playerSize)!=-1){
 							yVelocity = 0;
 						}
 					}
 					if(startPlatColor<255){
-						if(playerX+20>=100 && playerX<=220 && playerY+40> 400 && playerY<430){
+						if(playerX+playerSize/2>=100 && playerX<=220 && playerY+playerSize> 400 && playerY<430){
 							glide = false;
 							space = false;
 							yVelocity = 0;
-							playerY = 391;
+							playerY = 400-playerSize/2;
 							jumpsLeft = 1;
 						}
 					}
+				}
+				
+				attackTimer++;
+				if(attackTimer == 300){
+					if(shooters.size()>=0){
+						for(int i = 0; i < shooters.size(); i++){
+							bullets.add(new Bullet(shooters.get(i).getX(), shooters.get(i).getY(), 1));
+							bulletCount++;
+						}
+						attackTimer = 0;
+					}
+				}
+				for(int i = 0; i<enemy.size(); i++){
+					enemy.get(i).setSize();
 				}
 				
 				if(startPlatColor<255)
@@ -216,6 +296,11 @@ public class AnimRunner extends JComponent implements ActionListener, MouseListe
 				
 				scoreTimer++;
 				score = scoreTimer/100;
+				if(attackTimer == 100){
+					enemy.add(new Shooter(750,50,20,20));
+					shooters.add(new Shooter(750,50,20,20));
+					enemyNum++;
+				}
 				playerY+=yVelocity;
 				yVelocity += accel;
 				
@@ -263,7 +348,7 @@ public class AnimRunner extends JComponent implements ActionListener, MouseListe
 						
 					}
 				}
-				if(plats.intersect(playerX-8,playerY-31,p)!= -1){
+				if(plats.intersect(playerX-8,playerY-31,p, playerSize)!= -1){
 					yVelocity = 0;
 					glide = false;
 					space = false;
@@ -273,9 +358,12 @@ public class AnimRunner extends JComponent implements ActionListener, MouseListe
 					if(jetFuel>=100){
 						jetFuel = 100;
 					}
-					if(plats.intersect(playerX-8, playerY-31, p)!=-1){
-						playerY = plats.getY(p.get(plats.intersect(playerX-8,playerY-31,p)))-9;
+					if(plats.intersect(playerX-8, playerY-31, p, playerSize)!=-1){
+						playerY = plats.getY(p.get(plats.intersect(playerX-8,playerY-31,p, playerSize)))-playerSize/2;
 					}
+				}
+				if(bull.intersect(playerX-8, playerY-31, bullets, playerSize) != -1){
+					dead = true;
 				}
 				for(int i = 0; i < p.size(); i++){
 					if(plats.getX(p.get(i))<=-100){
@@ -290,6 +378,7 @@ public class AnimRunner extends JComponent implements ActionListener, MouseListe
 						
 					}
 				}
+				
 				if(startSpawnDone == false){
 					for(int i =0; i<6;i++){
 						randPlatX = (int)(Math.random()*600)+50;
@@ -312,6 +401,10 @@ public class AnimRunner extends JComponent implements ActionListener, MouseListe
 						p.get(platNum).setSize(startPlatX+randPlatX, startPlatY+randPlatY, platSizeX, platSizeY);
 					}
 					deathAnimationCount++;
+				}
+				for(int i = enemy.size()-1; i >=0; i--){
+					enemy.remove(i);
+					enemyNum--;
 				}
 			}
 			
@@ -381,13 +474,19 @@ public class AnimRunner extends JComponent implements ActionListener, MouseListe
 			}
 		}
 		if(keyPress == arg0.VK_R){
-			for(int i = p.size(); i > 0; i--){
-				platNum--;
-				p.remove(i-1);
-			}
-			dead = false;
 			playerX = 150;
 			playerY = -20;
+			for(int i = p.size(); i > 0; i--){
+				p.remove(i-1);
+				platNum--;
+				
+			}
+			for(int i = enemy.size(); i > 0; i--){
+				enemy.remove(i-1);
+				enemyNum--;
+				
+			}
+			dead = false;
 			colorChoice = 1;
 			startPlatColor=0;
 			startSpawnDone = false;
@@ -395,6 +494,7 @@ public class AnimRunner extends JComponent implements ActionListener, MouseListe
 			score = 0;
 			scoreTimer = 0;
 			jetFuel = 100;
+			attackTimer = 0;
 		}
 		if(keyPress == arg0.VK_B){
 			inMenu = true;

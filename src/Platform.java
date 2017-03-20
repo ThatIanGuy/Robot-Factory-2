@@ -27,12 +27,12 @@ public class Platform implements ActionListener {
 		sizeX = sizX;
 		sizeY = sizY;
 	}*/
-	public int intersect(int playerx, int playery, ArrayList plat){
+	public int intersect(int playerx, int playery, ArrayList plat, int playersize){
 		for(int i = 0; i <plat.size();i++){
-			if(playerx+20>= getX((Platform) plat.get(i))
+			if(playerx+playersize/2>= getX((Platform) plat.get(i))
 					&&playerx<=getX((Platform)plat.get(i))+100
-					&&playery+40>=getY((Platform)plat.get(i))
-					&&playery<=getY((Platform)plat.get(i))+40){
+					&&playery+playersize>=getY((Platform)plat.get(i))
+					&&playery<=getY((Platform)plat.get(i))+playersize){
 					platCollide = i;
 				return platCollide;
 			}
@@ -58,11 +58,11 @@ public class Platform implements ActionListener {
 		g.fillRect(posX,  posY,  sizeX,  sizeY);
 	}
 	
-	public void animation(){
+	/*public void animation(){
 		Platform animation = new Platform();
 		Timer l = new Timer(20,animation);
 		l.start();
-	}
+	}*/
 	public void move(){
 		posX += xVelocity;
 		/*if(posX == 0){
