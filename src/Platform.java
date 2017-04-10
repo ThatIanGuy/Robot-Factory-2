@@ -1,6 +1,7 @@
 import java.awt.Color;
 	import java.awt.Graphics;
-	import java.awt.event.ActionEvent;
+import java.awt.Image;
+import java.awt.event.ActionEvent;
 	import java.awt.event.ActionListener;
 	import java.util.ArrayList;
 
@@ -18,7 +19,7 @@ public class Platform implements ActionListener {
 	int xVelocity = -5;
 	int accelY = 0;
 	int accelX = 0;
-	
+	static Image platformTexture;
 	//wAnimRunner b = new AnimRunner();
 		
 	/*public Platform(int x, int y, int sizX, int sizY){
@@ -53,9 +54,13 @@ public class Platform implements ActionListener {
 		posY= p.posY;
 		return posY;
 	}
-	public void paintRect(Graphics g){
-		g.setColor(Color.BLACK);
-		g.fillRect(posX,  posY,  sizeX,  sizeY);
+	public void paintRect(Graphics g, Image platTex){
+		g.drawImage(platTex, posX, posY, null);
+		if(platTex == null){
+			g.setColor(Color.BLACK);
+			g.fillRect(posX,  posY,  sizeX,  sizeY);
+		}
+		
 	}
 	
 	/*public void animation(){

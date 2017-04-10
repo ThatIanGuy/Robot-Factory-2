@@ -1,5 +1,7 @@
 import java.awt.Color;
 import java.awt.Graphics;
+import java.awt.Image;
+import java.util.ArrayList;
 
 public class Shooter extends Enemy{
 	int x;
@@ -8,6 +10,7 @@ public class Shooter extends Enemy{
 	int sizeY;
 	int newY;
 	boolean goingUp;
+	//ArrayList<Bullet> bullets = new ArrayList<Bullet>(); 
 	
 	public Shooter(){
 		
@@ -21,16 +24,25 @@ public class Shooter extends Enemy{
 	public void setSize(){
 		
 	}
-	public void paint(Graphics g){
-		g.setColor(Color.ORANGE);
-		g.fillRect(x, y, sizeX, sizeY);
+	public void paint(Graphics g, Image texture){
+		g.drawImage(texture, x, y, null);
+		if(texture == null){
+			g.setColor(Color.ORANGE);
+			g.fillRect(x, y, sizeX, sizeY);
+		}
+		
+		//for(int i = 0; i < bullets.size(); i++){
+		//	bullets.get(i).paint(g);
+		//}
 	}
 	public void move(){
 		if(goingUp == true){
-			y-=2;
+			y = this.setNewY(-2);
+			newY = y;
 		}
 		else if(goingUp == false){
-			y+=2;
+			y = this.setNewY(2);
+			newY = y;
 		}
 		if(y<50){
 			goingUp = false;
@@ -39,16 +51,18 @@ public class Shooter extends Enemy{
 			goingUp = true;
 		}
 	}
-	public void attack(){
-		
+	public int setNewY(int increment){
+		newY = y + increment;
+		return newY;
 	}
-	public void setY(){
-		y = newY;
+	public void attack(){
+		//bullets.add(new Bullet(x, y, 1));
 	}
 	public int getX(){
 		return x;
 	}
 	public int getY(){
-		return y;
+		System.out.println(newY);
+		return newY;
 	}
 }

@@ -36,11 +36,9 @@ public class Button{
 					&& mousePosX-4 <= getButtonX((Button) buttons.get(i))+sizeX 
 					&& mousePosY-28 >= getButtonY((Button) buttons.get(i)) 
 					&& mousePosY-28 <= getButtonY((Button) buttons.get(i))+sizeY){
-				System.out.println("YAY I DID IT");
 				return i;
 			}
 		}
-		System.out.println("No button clicked");
 		return -1;
 	}
 	public int getButtonX(Button b){
