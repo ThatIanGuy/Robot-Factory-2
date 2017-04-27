@@ -604,7 +604,7 @@ public class AnimRunner extends JComponent implements ActionListener, MouseListe
 	}
 	
 	public void mousePressed(MouseEvent e){
-		yVelocity = 0;
+		//yVelocity = 0;
 		colorChoice = e.getButton();
 		//playerX = e.getX();
 		//playerY = e. getY();
@@ -714,9 +714,16 @@ public class AnimRunner extends JComponent implements ActionListener, MouseListe
 		mousePosX = e.getX();
 		mousePosY = e.getY();
 		if(buttons.clicked(b, mousePosX, mousePosY) == 0){
-			inMenu = false;
-			startMenu = false;
-			startPlatColor = 0;
+			if(startMenu){
+				inMenu = false;
+				startMenu = false;
+				startPlatColor = 0;
+			}
+			else{
+				inMenu = false;
+				startMenu = false;
+			}
+			
 			for(int i = b.size()-1; i>-1;i--){
 				b.remove(i);
 				buttNum--;
