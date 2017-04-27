@@ -604,7 +604,7 @@ public class AnimRunner extends JComponent implements ActionListener, MouseListe
 	}
 	
 	public void mousePressed(MouseEvent e){
-		yVelocity = 0;
+		//yVelocity = 0;
 		colorChoice = e.getButton();
 		//playerX = e.getX();
 		//playerY = e. getY();
