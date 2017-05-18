@@ -9,7 +9,7 @@ import java.awt.event.ActionEvent;
 	import javax.swing.Timer;
 	
 public class Platform implements ActionListener {
-	public int sizeX = 0;
+	public int sizeX = 100;
 	public int sizeY = 0;
 	public int posX = 0;
 	public int posY = 0;
@@ -32,7 +32,7 @@ public class Platform implements ActionListener {
 	public int intersect(int playerx, int playery, ArrayList plat, int playersize){
 		for(int i = 0; i <plat.size();i++){
 			if(playerx+playersize/2>= getX((Platform) plat.get(i))
-					&&playerx<=getX((Platform)plat.get(i))+100
+					&&playerx<=getX((Platform)plat.get(i))+sizeX
 					&&playery+playersize>=getY((Platform)plat.get(i))
 					&&playery<=getY((Platform)plat.get(i))+playersize){
 					platCollide = i;
@@ -41,6 +41,7 @@ public class Platform implements ActionListener {
 		}
 		return -1;
 	}
+	
 	public void setSize(int x, int y, int sizX, int sizY){
 		posX = x;
 		posY = y;
@@ -61,7 +62,6 @@ public class Platform implements ActionListener {
 			g.setColor(Color.BLACK);
 			g.fillRect(posX,  posY,  sizeX,  sizeY);
 		}
-		
 	}
 	
 	/*public void animation(){
