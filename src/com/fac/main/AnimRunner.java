@@ -25,7 +25,7 @@ import javax.swing.JFrame;
 import javax.swing.Timer;
 
 public class AnimRunner extends JComponent implements ActionListener, MouseListener, KeyListener{
-	
+
 	//DONE Fix platform spawning
 	//DONE Add jetpack fuel
 	//DONE Add death
@@ -46,7 +46,7 @@ public class AnimRunner extends JComponent implements ActionListener, MouseListe
 	//DONE Add Title
 	//DONE Fix bullet bug
 	//DONE Make background work
-	//TODO Jumper enemy?
+	//DONE Jumper enemy?
 	//DONE Highscores?
 	//NOPE Maybe acceleration based horizontal movement?
 	
@@ -54,15 +54,18 @@ public class AnimRunner extends JComponent implements ActionListener, MouseListe
 	
 	//POST RELEASE TODO LIST
 	//DONE Add jumper enemy
-	//TODO Add jumper texture
+	//DONE Add jumper texture
 	//TODO Add waves of jumpers
 	//NOPE Add shooters from other directions?
 	//TODO Add shooting, but it takes up your fuel
-	//TODO Add new obstacles, such as walls
+	//NOPE Add new obstacles, such as walls
 	//TODO Add a boss
 	//TODO Add sound
 	//TODO Add scaling for full screen/different screen sizes
 	//DONE Fix platform collision
+	//TODO Finish adding sound effects
+	//TODO Get music to loop
+	//TODO Add separate sound effect mute button
 	
 	static int winHeight;
 	static int winWidth;
@@ -73,7 +76,6 @@ public class AnimRunner extends JComponent implements ActionListener, MouseListe
 	boolean playerFalling;
 	int colorChoice = 1;
 	static int playerSize = 40;
-	boolean up = true;
 	int yVelocity = 0;
 	double accel = 3;
 	int keyPress = 0;
@@ -95,7 +97,7 @@ public class AnimRunner extends JComponent implements ActionListener, MouseListe
 	int platSizeY = 40;
 	int startPlatX = 800;
 	int startPlatY = 0;
-	int scoreTimer, attackTimer = 0;
+	int scoreTimer, attackTimer, globalTimer = 0;
 	int score = 0;
 	int jetFuel =100;
 	int startPlatColor = 255;
@@ -119,9 +121,9 @@ public class AnimRunner extends JComponent implements ActionListener, MouseListe
 	boolean madeFile = false;
 	boolean jumperWarning = false;
 	int jumperWarningTimer = 0;
-	
-	int vX = 10;
-	int vY = 10; 
+	boolean musicStart;
+	int numOfLoops = 1;
+	boolean musicMuted = true;
 	
 	static Image playerTexture;
 	static Image explosionTexture;
@@ -131,20 +133,27 @@ public class AnimRunner extends JComponent implements ActionListener, MouseListe
 	static Image background2;
 	static Image titleText;
 	static Image jumperTexture;
+	static Image musicTexture;
+	static Image musicMutedTexture;
 	
 	ArrayList<Spawn> smoke = new ArrayList<Spawn>();
 	ArrayList<Platform> platforms = new ArrayList<Platform>();
-	ArrayList<Button> b = new ArrayList<Button>();
+	ArrayList<Button> buttons = new ArrayList<Button>();
 	ArrayList<Enemy> enemy = new ArrayList<Enemy>();
 	ArrayList<Shooter> shooters = new ArrayList<Shooter>();
 	ArrayList<Bullet> bullets = new ArrayList<Bullet>();
 	ArrayList<Jumper> jumpers = new ArrayList<Jumper>();
 	
-	Button buttons = new Button();
-	Platform plats = new Platform();
-	Shooter shoot = new Shooter();
-	Bullet bull = new Bullet();
-	Jumper jump = new Jumper();
+	Button button = new Button();
+	Platform platform = new Platform();
+	Shooter shooter = new Shooter();
+	Bullet bullet = new Bullet();
+	Jumper jumper = new Jumper();
+	
+	static Sound music = new Sound();
+	static Sound laser = new Sound();
+	static Sound explosion = new Sound();
+	static Sound jetpack = new Sound();
 	
 	public static void main(String[] args) {
 		JFrame window = new JFrame();
@@ -164,6 +173,12 @@ public class AnimRunner extends JComponent implements ActionListener, MouseListe
 		
 		Timer t = new Timer(20,animation);
 		t.start();
+		
+		music.setClip("8-bit-music-loop.wav");
+		//laser.setClip("");
+		explosion.setClip("Explosion+1.wav");
+		//jetpack.setClip("");
+		
 		try{
 			background1 = ImageIO.read(AnimRunner.class.getResource("/imgs/factorybackground.png"));
 			background2 = ImageIO.read(AnimRunner.class.getResource("/imgs/factorybackgroundbackwards.png"));
@@ -173,16 +188,27 @@ public class AnimRunner extends JComponent implements ActionListener, MouseListe
 		}
 		
 		try{
-				//playerTexture = ImageIO.read(new File("C:/Users/imor1471/Downloads/Transparentrobot.gif"));
-				playerTexture = ImageIO.read(AnimRunner.class.getResource("/imgs/Transparentrobot.gif"));
-				playerSize = playerTexture.getHeight(null);
-				window.setIconImage(playerTexture);
-			}
-			catch(IOException e){
-				e.printStackTrace();
-				playerSize = 61;
-			}
+			playerTexture = ImageIO.read(AnimRunner.class.getResource("/imgs/Transparentrobot.gif"));
+			playerSize = playerTexture.getHeight(null);
+			window.setIconImage(playerTexture);
+		}
+		catch(IOException e){
+			e.printStackTrace();
+			playerSize = 61;
+		}
+		try{
+			musicMutedTexture = ImageIO.read(AnimRunner.class.getResource("/imgs/soundIconWCrossNoBackground.png"));
+		}
+		catch(IOException e){
+			e.printStackTrace();
+		}
 		
+		try{
+			musicTexture = ImageIO.read(AnimRunner.class.getResource("/imgs/soundIconNoBackground.png"));
+		}
+		catch(IOException e){
+			e.printStackTrace();
+		}
 		try{
 				explosionTexture = ImageIO.read(AnimRunner.class.getResource("/imgs/explosion.png"));
 			}
@@ -226,30 +252,6 @@ public class AnimRunner extends JComponent implements ActionListener, MouseListe
 			g.drawImage(titleText, 200, 100, null);
 		}
 		
-		//literately
-		if(colorChoice == 1){
-			
-			g.drawImage(playerTexture, playerX, playerY, null);
-			if(playerTexture == null){
-				g.setColor(Color.GREEN);
-				g.fillRect(playerX, playerY, playerSize,playerSize);
-			}
-		}
-		else if(colorChoice == 2){
-			
-			if(explosionTexture == null){
-				g.setColor(Color.RED);
-				g.fillRect(playerX, playerY, playerSize,playerSize);
-			}
-			else{
-				g.drawImage(explosionTexture, playerX-explosionTexture.getWidth(null)/2, playerY-explosionTexture.getHeight(null)+explosionTexture.getHeight(null)/4, null);
-			}
-		}
-		else if(colorChoice == 3){
-			g.setColor(Color.BLUE);
-			g.fillRect(playerX, playerY, playerSize,playerSize);
-		}
-		else{}
 		if(inMenu == false){
 			g.setColor(Color.BLACK);
 			g.setFont(new Font("Calibri", Font.BOLD, 20));
@@ -274,7 +276,6 @@ public class AnimRunner extends JComponent implements ActionListener, MouseListe
 			}	
 		}
 		else{
-			
 			g.setColor(Color.darkGray);
 			g.fillRect(0, 457, 147, 122);
 			g.setColor(Color.gray);
@@ -291,7 +292,7 @@ public class AnimRunner extends JComponent implements ActionListener, MouseListe
 			g.drawString("P: Pause", controlX, controlY + 4*increment);
 			g.setColor(new Color(140,140,140));
 			g.setFont(new Font("Calibri",Font.PLAIN,9));
-			g.drawString("R.I.platforms. Level Select", 0, 570);
+			g.drawString("R.I.P. Level Select", 0, 570);
 		}
 		
 		if(startPlatColor<255){
@@ -299,11 +300,44 @@ public class AnimRunner extends JComponent implements ActionListener, MouseListe
 			g.setColor(new Color(startPlatColor, startPlatColor, startPlatColor, 255-startPlatColor));
 			g.fillRect(100, 400, 120, 30);
 		}
+		//DRAWING SMOKE
+		if(objects>=0){
+			for(int i = 0; i<=objects; i++){
+				smoke.get(i).paintRect(g);
+				if(inMenu == false){
+					smoke.get(i).move();
+				}
+				
+			}
+		}
+		//DRAWING THE PLAYER
+		if(colorChoice == 1){
+			
+			g.drawImage(playerTexture, playerX, playerY, null);
+			if(playerTexture == null){
+				g.setColor(Color.GREEN);
+				g.fillRect(playerX, playerY, playerSize,playerSize);
+			}
+		}
+		else if(colorChoice == 2){
+			
+			if(explosionTexture == null){
+				g.setColor(Color.RED);
+				g.fillRect(playerX, playerY, playerSize,playerSize);
+			}
+			else{
+				g.drawImage(explosionTexture, playerX-explosionTexture.getWidth(null)/2, playerY-explosionTexture.getHeight(null)+explosionTexture.getHeight(null)/4, null);
+			}
+		}
+		else if(colorChoice == 3){
+			g.setColor(Color.BLUE);
+			g.fillRect(playerX, playerY, playerSize,playerSize);
+		}
 		if(deathAnimationCount>300){
 			g.setColor(Color.BLACK);
 			g.fillRect(0,0,800,600);
 		}
-		
+		//DRAWING PLATFORMS
 		if(platforms.size()>=0){
 			for(int i = 0; i<=platNum; i++){
 				platforms.get(i).paintRect(g, platformTexture);
@@ -311,6 +345,61 @@ public class AnimRunner extends JComponent implements ActionListener, MouseListe
 					platforms.get(i).move();
 				}
 			}
+		}
+		
+		//DRAWING ENEMIES
+		if(enemy.size()>=0){
+			for(int i = 0; i <= enemyNum; i++){
+				enemy.get(i).paint(g);
+				if(inMenu == false){
+					enemy.get(i).move();
+				}
+			}
+		}
+		//DRAWING SHOOTERS
+		if(shooters.size() >= 0){
+			for(int i = 0; i <= shooters.size()-1; i++){
+				shooters.get(i).paint(g, shooterTexture);
+				if(inMenu == false){
+					shooters.get(i).move();
+				}
+			}
+		}
+		//DRAWING BULLETS
+		if(bullets.size()>=0){
+			for(int i = 0; i <= bulletCount; i++){
+				 bullets.get(i).paint(g);
+				 if(inMenu == false){
+					 bullets.get(i).move();
+				 }
+			}
+		}
+		//DRAWING JUMPERS
+		if(jumpers.size()>=0){
+			for(int i = 0; i<= jumperCount; i++){
+				jumpers.get(i).paint(g, jumperTexture);
+				if(inMenu == false){
+					jumpers.get(i).move(platforms, jumpers, attackTimer);
+				}
+			}
+		}
+		//DRAWING BUTTONS
+		if(buttons.size()>0 && inMenu){
+			if(startMenu == false && inMenu == true){
+				g.setColor(Color.white);
+				g.setFont(new Font("Impact", Font.PLAIN, 100));
+				g.drawString("Paused", 245, 200);
+			}
+			
+			buttons.get(0).paintButton(g);
+			buttons.get(1).paintButton(g);
+			
+			if(musicMuted){
+				buttons.get(2).paintButton(g,musicMutedTexture);
+			}
+			else{
+				buttons.get(2).paintButton(g,musicTexture);
+			}			
 		}
 		if(dead==true){
 			g.setColor(Color.white);
@@ -327,61 +416,24 @@ public class AnimRunner extends JComponent implements ActionListener, MouseListe
 				e.printStackTrace();
 			}
 		}
-		if(b.size()>=0){
-			if(startMenu == false && inMenu == true){
-				g.setColor(Color.white);
-				g.setFont(new Font("Impact", Font.PLAIN, 100));
-				g.drawString("Paused", 245, 200);
-			}
-			for(int i = 0; i<=buttNum; i++){
-				b.get(i).paintButton(g);
-			}
-		}
-		if(objects>=0){
-			for(int i = 0; i<=objects; i++){
-				smoke.get(i).paintRect(g);
-				if(inMenu == false){
-					smoke.get(i).move();
-				}
-				
-			}
-		}
-		if(enemy.size()>=0){
-			for(int i = 0; i <= enemyNum; i++){
-				enemy.get(i).paint(g);
-				if(inMenu == false){
-					enemy.get(i).move();
-				}
-			}
-		}
-		if(shooters.size() >= 0){
-			for(int i = 0; i <= shooters.size()-1; i++){
-				shooters.get(i).paint(g, shooterTexture);
-				if(inMenu == false){
-					shooters.get(i).move();
-				}
-			}
-		}
-		if(bullets.size()>=0){
-			for(int i = 0; i <= bulletCount; i++){
-				 bullets.get(i).paint(g);
-				 if(inMenu == false){
-					 bullets.get(i).move();
-				 }
-			}
-		}
-		if(jumpers.size()>=0){
-			for(int i = 0; i<= jumperCount; i++){
-				jumpers.get(i).paint(g, jumperTexture);
-				if(inMenu == false){
-					jumpers.get(i).move(platforms, jumpers, attackTimer);
-				}
-			}
-		}
 	}
 
 	public void actionPerformed(ActionEvent e) {
+		globalTimer++;
 		
+		if(musicMuted == false){
+			if(musicStart == false){
+				music.play(true);
+				musicStart = true;
+			}
+		}
+		if(globalTimer/200 == numOfLoops){
+			if(!musicMuted){
+				music.stop();
+				musicStart = false;
+				numOfLoops++;
+			}
+		}
 		if(inMenu == false){
 			
 			//BACKGROUND MOVEMENT
@@ -395,7 +447,7 @@ public class AnimRunner extends JComponent implements ActionListener, MouseListe
 			}
 			//THE GAME
 			if(dead == false){		
-				//MAKING SURE THE HIGHSCORE IS WRITTEN ONCE
+				//MAKING SURE THE HIGHSCORE IS ONLY WRITTEN ONCE
 				writtenOnce = false;
 				
 				//REMOVING SMOKE
@@ -404,24 +456,6 @@ public class AnimRunner extends JComponent implements ActionListener, MouseListe
 						for(int i = smoke.size()-1; i >0; i--){
 							smoke.remove(i);
 							objects--;
-						}
-					}
-				}
-				
-				// START PLATFORM PLAYER COLLISION
-				for(int i = 0; i<= yVelocity; i++){
-					for(int o = 0; o<plats.sizeX; o++){
-						if(plats.intersect(playerX, playerY, platforms, playerSize)!=-1){
-							yVelocity = 0;
-						}
-					}
-					if(startPlatColor<255){
-						if(playerX+playerSize/2>=100 && playerX<=220 && playerY+playerSize>= 400 && playerY<430){
-							yVelocity = 0;
-							glide = false;
-							space = false;
-							playerY = 400-playerSize;
-							jumpsLeft = 1;
 						}
 					}
 				}
@@ -511,21 +545,43 @@ public class AnimRunner extends JComponent implements ActionListener, MouseListe
 						
 					}*/
 				}
-				if(plats.intersect(playerX,playerY,platforms, playerSize)!= -1 && playerFalling){
+				if(platform.intersect(playerX,playerY,platforms, playerSize)!= -1 && playerFalling){
 					glide = false;
 					space = false;
 					yVelocity = 0;
+					accel = 3;
 					jumpsLeft = 1;
 					playerX-=5;
 					jetFuel++;
 					if(jetFuel>=100){
 						jetFuel = 100;
 					}
-					if(plats.intersect(playerX, playerY, platforms, playerSize)!=-1){
-						playerY = plats.getY(platforms.get(plats.intersect(playerX,playerY,platforms, playerSize)))-playerSize;
+					if(platform.intersect(playerX, playerY, platforms, playerSize)!=-1){
+						playerY = platform.getY(platforms.get(platform.intersect(playerX,playerY,platforms, playerSize)))-playerSize;
 					}
 				}
+				
+				//PLATFORM PLAYER COLLISION
+				for(int i = 0; i<= yVelocity; i++){
+					for(int o = 0; o<platform.sizeX; o++){
+						if(platform.intersect(playerX, playerY, platforms, playerSize)!=-1){
+							yVelocity = 0;
+						}
+					}
+					if(startPlatColor<255){
+						if(playerX+playerSize/2>=100 && playerX + playerSize/4<=220 && playerY+playerSize>= 400 && playerY<430){
+							glide = false;
+							space = false;
+							accel = 3;
+							playerY = 400-playerSize;
+							yVelocity = 0;
+							jumpsLeft = 1;
+						}
+					}
+				}
+				//JETPACK
 				if(glide == true){
+					jetpack.play(true);
 					if(jetFuel >0){
 						if(yVelocity <= -10){
 							yVelocity = -10;
@@ -542,9 +598,7 @@ public class AnimRunner extends JComponent implements ActionListener, MouseListe
 					}
 					smoke.add(new Spawn());
 					objects++;
-					boxX = playerX;
-					boxY = playerY;
-					smoke.get(objects).setSize(playerX+(playerSize/2)-(smokeSize/2), boxY, smokeSize, smokeSize);
+					smoke.get(objects).setSize(playerX+(playerSize/2)+ (int)(Math.random()*10-5), playerY+playerSize, smokeSize, smokeSize);
 					if(objects >= 150){
 						smoke.remove(0);
 						objects--;
@@ -553,18 +607,17 @@ public class AnimRunner extends JComponent implements ActionListener, MouseListe
 						
 					}
 				}
-				
 				//KILLING THE PLAYER
-				if(bull.intersect(playerX, playerY, bullets, playerSize) != -1){
+				if(bullet.intersect(playerX, playerY, bullets, playerSize) != -1){
 					dead = true;
 				}
-				if(plats.intersect(playerX,playerY,jumpers,playerSize) != -1){
+				if(jumper.intersect(playerX,playerY,jumpers,playerSize) != -1){
 					dead = true;
 				}
 				
 				//PLATFORM, LASER AND JUMPER DELETION
 				for(int i = 0; i < platforms.size(); i++){
-					if(plats.getX(platforms.get(i))<=-100){
+					if(platform.getX(platforms.get(i))<=-100){
 						platforms.remove(i);
 						platNum--;
 						
@@ -607,6 +660,7 @@ public class AnimRunner extends JComponent implements ActionListener, MouseListe
 			//DEATH
 			if(dead == true){
 				if(writtenOnce == false){
+					explosion.play(false);
 					try {
 						if(score>getHighScore()){
 							setHighScore(score);
@@ -651,12 +705,16 @@ public class AnimRunner extends JComponent implements ActionListener, MouseListe
 		//MENUS
 		else if(inMenu == true){
 			buttNum++;
-			b.add(new Button());
-			b.get(buttNum).setButton(150, 350, 200, 60,"Play");
+			buttons.add(new Button());
+			buttons.get(buttNum).setButton(150, 350, 200, 60,"Play");
 			
 			buttNum++;
-			b.add(new Button());
-			b.get(buttNum).setButton(450, 350, 200, 60,"Exit");	
+			buttons.add(new Button());
+			buttons.get(buttNum).setButton(450, 350, 200, 60,"Exit");	
+			
+			buttNum++;
+			buttons.add(new Button());
+			buttons.get(buttNum).setButton(769, 546, 25, 25, "");
 		}
 			
 			repaint();
@@ -718,7 +776,7 @@ public class AnimRunner extends JComponent implements ActionListener, MouseListe
 	
 	public void mousePressed(MouseEvent e){
 		//yVelocity = 0;
-		colorChoice = e.getButton();
+		//colorChoice = e.getButton();
 		//playerX = e.getX();
 		//playerY = e. getY();
 	}
@@ -771,6 +829,18 @@ public class AnimRunner extends JComponent implements ActionListener, MouseListe
 		}*/
 		if(keyPress == arg0.VK_R){
 			if(inMenu == false){
+				if(explosion.running()){
+					explosion.stop();
+				}
+				//if(laser.running()){
+				//	laser.stop();
+				//}
+				//if(jetpack.running()){
+				//	jetpack.stop();
+				//}
+				
+			
+				
 				playerX = 150;
 				playerY = -20;
 				for(int i = platforms.size(); i > 0; i--){
@@ -796,8 +866,8 @@ public class AnimRunner extends JComponent implements ActionListener, MouseListe
 			if(dead == false){
 				if(inMenu){
 					inMenu = false;
-					for(int i = b.size()-1; i>-1;i--){
-						b.remove(i);
+					for(int i = buttons.size()-1; i>-1;i--){
+						buttons.remove(i);
 						buttNum--;
 					}
 				}
@@ -821,6 +891,7 @@ public class AnimRunner extends JComponent implements ActionListener, MouseListe
 			left = false;
 		}
 		else if(lastKeyPress == arg0.VK_W){
+			jetpack.stop();
 			glide = false;
 			space = false;
 			accel = 3;
@@ -837,7 +908,7 @@ public class AnimRunner extends JComponent implements ActionListener, MouseListe
 		//mouseButton = e.getButton();
 		mousePosX = e.getX();
 		mousePosY = e.getY();
-		if(buttons.clicked(b, mousePosX, mousePosY) == 0){
+		if(button.clicked(buttons, mousePosX, mousePosY) == 0){
 			if(startMenu){
 				inMenu = false;
 				startMenu = false;
@@ -848,13 +919,24 @@ public class AnimRunner extends JComponent implements ActionListener, MouseListe
 				startMenu = false;
 			}
 			
-			for(int i = b.size()-1; i>-1;i--){
-				b.remove(i);
+			for(int i = buttons.size()-1; i>-1;i--){
+				buttons.remove(i);
 				buttNum--;
 			}
 		}
-		else if(buttons.clicked(b, mousePosX, mousePosY) == 1){
+		else if(button.clicked(buttons, mousePosX, mousePosY) == 1){
 			System.exit(0);
+		}
+		else if(button.clicked(buttons, mousePosX, mousePosY) == 2){
+			if(musicMuted){
+				musicMuted = false;
+				musicStart = false;
+				music.play(true);
+			}
+			else if(musicMuted == false){
+				musicMuted = true;
+				music.stop();
+			}
 		}
 		
 	}

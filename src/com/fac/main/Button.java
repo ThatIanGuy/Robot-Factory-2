@@ -2,6 +2,7 @@ package com.fac.main;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
+import java.awt.Image;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.ArrayList;
@@ -29,6 +30,15 @@ public class Button{
 		g.fillRect(x+indent, y+indent, sizeX-2*indent, sizeY - 2*indent);
 		g.setColor(Color.BLACK);
 		g.setFont(new Font("Impact", Font.BOLD, 45));
+		g.drawString(buttonText, x+sizeX/4, y+sizeY-10);
+	}
+	public void paintButton(Graphics g, Image img){
+		
+		g.setColor(Color.DARK_GRAY);
+		g.fillRect(x, y, sizeX, sizeY);
+		g.setColor(Color.GRAY);
+		g.fillRect(x+indent, y+indent, sizeX-2*indent, sizeY - 2*indent);
+		g.drawImage(img, x+indent, y+indent, null);
 		g.drawString(buttonText, x+sizeX/4, y+sizeY-10);
 	}
 	public int clicked(ArrayList buttons, int mousePosX, int mousePosY){
